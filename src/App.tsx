@@ -1,27 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Cloud, MessageCircle, Send, Bot, User, Sun, Moon, Plus } from 'lucide-react';
 
-export interface Message {
+interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
 }
 
-export interface ChatSession {
+interface ChatSession {
   id: string;
   title: string;
   messages: Message[];
   createdAt: Date;
 }
 
-function App() {
-  const [darkMode, setDarkMode] = useState(false);
+const App: React.FC = () => {
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [inputMessage, setInputMessage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -134,9 +134,32 @@ function App() {
     const words = message.toLowerCase().split(' ');
     const locationWords = ['in', 'at', 'for', 'weather', 'from', 'of'];
     
-    const commonCities = ['tokyo', 'london', 'paris', 'new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'philadelphia', 'san antonio', 'san diego', 'dallas', 'san jose', 'austin', 'jacksonville', 'fort worth', 'columbus', 'charlotte', 'san francisco', 'indianapolis', 'seattle', 'denver', 'washington', 'boston', 'el paso', 'nashville', 'detroit', 'oklahoma city', 'portland', 'las vegas', 'memphis', 'louisville', 'baltimore', 'milwaukee', 'albuquerque', 'tucson', 'fresno', 'sacramento', 'mesa', 'kansas city', 'atlanta', 'long beach', 'colorado springs', 'raleigh', 'miami', 'virginia beach', 'omaha', 'oakland', 'minneapolis', 'tulsa', 'arlington', 'tampa', 'new orleans', 'wichita', 'cleveland', 'bakersfield', 'aurora', 'anaheim', 'honolulu', 'santa ana', 'corpus christi', 'riverside', 'lexington', 'stockton', 'toledo', 'st. paul', 'newark', 'greensboro', 'plano', 'henderson', 'lincoln', 'buffalo', 'jersey city', 'chula vista', 'fort wayne', 'orlando', 'st. petersburg', 'chandler', 'laredo', 'norfolk', 'durham', 'madison', 'lubbock', 'irvine', 'winston-salem', 'glendale', 'garland', 'hialeah', 'reno', 'chesapeake', 'gilbert', 'baton rouge', 'irving', 'scottsdale', 'north las vegas', 'fremont', 'boise', 'richmond', 'san bernardino', 'birmingham', 'spokane', 'rochester', 'des moines', 'modesto', 'fayetteville', 'tacoma', 'oxnard', 'fontana', 'montgomery', 'moreno valley', 'shreveport', 'yonkers', 'akron', 'huntington beach', 'little rock', 'augusta', 'amarillo', 'mobile', 'grand rapids', 'salt lake city', 'tallahassee', 'huntsville', 'grand prairie', 'knoxville', 'worcester', 'newport news', 'brownsville', 'overland park', 'santa clarita', 'providence', 'garden grove', 'chattanooga', 'oceanside', 'jackson', 'fort lauderdale', 'santa rosa', 'rancho cucamonga', 'port st. lucie', 'tempe', 'ontario', 'vancouver', 'cape coral', 'sioux falls', 'springfield', 'peoria', 'pembroke pines', 'elk grove', 'salem', 'lancaster', 'corona', 'eugene', 'palmdale', 'salinas', 'pasadena', 'fort collins', 'hayward', 'pomona', 'cary', 'rockford', 'alexandria', 'escondido', 'mckinney', 'joliet', 'sunnyvale'];
+    const commonCities = [
+      'tokyo', 'london', 'paris', 'new york', 'los angeles', 'chicago', 'houston', 'phoenix',
+      'philadelphia', 'san antonio', 'san diego', 'dallas', 'san jose', 'austin', 'jacksonville',
+      'fort worth', 'columbus', 'charlotte', 'san francisco', 'indianapolis', 'seattle', 'denver',
+      'washington', 'boston', 'el paso', 'nashville', 'detroit', 'oklahoma city', 'portland',
+      'las vegas', 'memphis', 'louisville', 'baltimore', 'milwaukee', 'albuquerque', 'tucson',
+      'fresno', 'sacramento', 'mesa', 'kansas city', 'atlanta', 'long beach', 'colorado springs',
+      'raleigh', 'miami', 'virginia beach', 'omaha', 'oakland', 'minneapolis', 'tulsa', 'arlington',
+      'tampa', 'new orleans', 'wichita', 'cleveland', 'bakersfield', 'aurora', 'anaheim', 'honolulu',
+      'santa ana', 'corpus christi', 'riverside', 'lexington', 'stockton', 'toledo', 'st. paul',
+      'newark', 'greensboro', 'plano', 'henderson', 'lincoln', 'buffalo', 'jersey city', 'chula vista',
+      'fort wayne', 'orlando', 'st. petersburg', 'chandler', 'laredo', 'norfolk', 'durham', 'madison',
+      'lubbock', 'irvine', 'winston-salem', 'glendale', 'garland', 'hialeah', 'reno', 'chesapeake',
+      'gilbert', 'baton rouge', 'irving', 'scottsdale', 'north las vegas', 'fremont', 'boise',
+      'richmond', 'san bernardino', 'birmingham', 'spokane', 'rochester', 'des moines', 'modesto',
+      'fayetteville', 'tacoma', 'oxnard', 'fontana', 'montgomery', 'moreno valley', 'shreveport',
+      'yonkers', 'akron', 'huntington beach', 'little rock', 'augusta', 'amarillo', 'mobile',
+      'grand rapids', 'salt lake city', 'tallahassee', 'huntsville', 'grand prairie', 'knoxville',
+      'worcester', 'newport news', 'brownsville', 'overland park', 'santa clarita', 'providence',
+      'garden grove', 'chattanooga', 'oceanside', 'jackson', 'fort lauderdale', 'santa rosa',
+      'rancho cucamonga', 'port st. lucie', 'tempe', 'ontario', 'vancouver', 'cape coral',
+      'sioux falls', 'springfield', 'peoria', 'pembroke pines', 'elk grove', 'salem', 'lancaster',
+      'corona', 'eugene', 'palmdale', 'salinas', 'pasadena', 'fort collins', 'hayward', 'pomona',
+      'cary', 'rockford', 'alexandria', 'escondido', 'mckinney', 'joliet', 'sunnyvale'
+    ];
     
-    // First, look for common cities in the message
     const messageText = message.toLowerCase();
     for (const city of commonCities) {
       if (messageText.includes(city)) {
@@ -144,11 +167,9 @@ function App() {
       }
     }
     
-    // Then use the original logic for location indicators
     for (let i = 0; i < words.length; i++) {
       if (locationWords.includes(words[i]) && i + 1 < words.length) {
         let location = words[i + 1];
-        // Check if there's another word that could be part of the location
         if (i + 2 < words.length && words[i + 2].length > 2 && !['?', '.', '!'].includes(words[i + 2])) {
           location += ' ' + words[i + 2];
         }
@@ -222,7 +243,7 @@ function App() {
       throw new Error('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file.');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     let prompt = `You are a helpful weather assistant chatbot. The user asked: "${userMessage}"\n\n`;
     
@@ -269,7 +290,6 @@ function App() {
       }
 
       const data = await response.json();
-      console.log('Gemini API response:', data);
       return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t generate a response.';
     } catch (error) {
       console.error('Gemini AI error:', error);
@@ -296,7 +316,6 @@ function App() {
       let weatherData: string | undefined;
       let aiResponse: string;
 
-      // Check if message is asking about weather
       const weatherKeywords = ['weather', 'temperature', 'forecast', 'rain', 'sunny', 'cloudy', 'climate'];
       const isWeatherQuery = weatherKeywords.some(keyword => 
         userMessage.content.toLowerCase().includes(keyword)
@@ -304,13 +323,11 @@ function App() {
 
       if (isWeatherQuery) {
         try {
-          // Get weather data first
           const location = extractLocation(userMessage.content);
           if (location) {
             console.log('Requesting weather for location:', location);
             weatherData = await getWeatherData(location);
           } else {
-            // No location specified, ask user to provide one
             const assistantMessage: Message = {
               id: (Date.now() + 1).toString(),
               role: 'assistant',
@@ -325,17 +342,14 @@ function App() {
           }
         } catch (error) {
           console.error('Weather API failed:', error);
-          // Continue without weather data
         }
       }
 
-      // Generate AI response
       try {
         aiResponse = await generateAIResponse(userMessage.content, weatherData);
       } catch (error) {
         console.error('Gemini AI failed:', error);
         if (weatherData) {
-          // If we have weather data but AI failed, provide a basic response
           aiResponse = `Here's the weather information I found:\n\n${weatherData}`;
         } else {
           aiResponse = 'Sorry, I\'m having trouble processing your request right now. Please try again later.';
@@ -366,14 +380,14 @@ function App() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
-  const formatTime = (timestamp: Date) => {
+  const formatTime = (timestamp: Date): string => {
     return timestamp.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -400,14 +414,14 @@ function App() {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             {sessions.length === 0 ? (
               <div className="p-4 text-center text-muted">
                 <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No chats yet</p>
               </div>
             ) : (
-              <div className="p-2">
+              <div className="p-2 sidebar-scroll overflow-y-auto max-h-full">
                 {sessions.map((session) => (
                   <button
                     key={session.id}
@@ -442,7 +456,7 @@ function App() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col main-content">
+      <div className="flex-1 flex flex-col main-content main-scroll">
         {/* Header */}
         <header className="chat-header p-4">
           <div className="flex items-center justify-between">
@@ -484,7 +498,7 @@ function App() {
           {currentSession ? (
             <>
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto messages-container">
+              <div className="flex-1 overflow-y-auto messages-container messages-scroll">
                 {currentSession.messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center px-4 welcome-screen">
                     <Cloud className="w-20 h-20 text-blue-500 mb-6 opacity-80" />
@@ -512,7 +526,7 @@ function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-4xl mx-auto space-y-4 py-4 px-4">
+                  <div className="max-w-4xl mx-auto space-y-4 py-4 px-4 min-h-full">
                     {currentSession.messages.map((message) => (
                       <div key={message.id} className="message-wrapper">
                         <div className={`message-item ${message.role}`}>
@@ -615,6 +629,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
 export default App;
