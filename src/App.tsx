@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Cloud, MessageCircle, Send, Bot, User, Sun, Moon, Plus, ThumbsUp, ThumbsDown, Copy, Download, Check, FileText, Trash2 } from 'lucide-react';
+import LandingPage from './components/LandingPage';
 
 interface Message {
   id: string;
@@ -19,6 +20,7 @@ interface ChatSession {
 
 const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [showLanding, setShowLanding] = useState<boolean>(true);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');
@@ -40,6 +42,9 @@ const App: React.FC = () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       setDarkMode(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
     }
 
     // Load saved sessions
@@ -82,6 +87,13 @@ const App: React.FC = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+  };
+
+  const handleStartChat = () => {
+    setShowLanding(false);
+    if (!currentSession) {
+      createNewSession();
+    }
   };
 
   const createNewSession = () => {
@@ -515,6 +527,16 @@ const App: React.FC = () => {
       hour12: true
     });
   };
+
+  if (showLanding) {
+    return (
+      <LandingPage 
+        onStartChat={handleStartChat}
+        darkMode={darkMode}
+        toggleTheme={toggleTheme}
+      />
+    );
+  }
 
   return (
     <div className="h-screen flex app-container" data-theme={darkMode ? 'dark' : 'light'}>
