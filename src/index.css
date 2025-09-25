@@ -100,6 +100,28 @@
   color: var(--text-primary);
 }
 
+/* Session Action Buttons */
+.session-action-btn {
+  color: var(--text-muted);
+  background-color: transparent;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.session-action-btn:hover {
+  color: var(--text-secondary);
+  background-color: var(--hover-bg);
+}
+
+.session-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.session-action-btn.delete-btn:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
 .text-muted {
   color: var(--text-muted);
 }
@@ -325,6 +347,50 @@
 
 .app-container[data-theme="dark"] .start-chat-btn:hover {
   background-color: #f3f4f6;
+}
+
+.export-btn {
+  background-color: #10b981;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.export-btn:hover {
+  background-color: #059669;
+}
+
+.app-container[data-theme="dark"] .export-btn {
+  background-color: #10b981;
+  color: white;
+}
+
+.app-container[data-theme="dark"] .export-btn:hover {
+  background-color: #059669;
+}
+
+/* Message Action Buttons */
+.message-action-btn {
+  color: var(--text-muted);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.message-action-btn:hover {
+  color: var(--text-secondary);
+  background-color: var(--hover-bg);
+}
+
+.message-action-btn.liked {
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.message-action-btn.disliked {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.copy-btn:hover {
+  color: #3b82f6;
 }
 
 /* Custom scrollbar */

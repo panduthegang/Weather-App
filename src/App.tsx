@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Cloud, MessageCircle, Send, Bot, User, Sun, Moon, Plus } from 'lucide-react';
+import { Cloud, MessageCircle, Send, Bot, User, Sun, Moon, Plus, ThumbsUp, ThumbsDown, Copy, Download, Check, FileText, Trash2 } from 'lucide-react';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  liked?: boolean;
+  disliked?: boolean;
 }
 
 interface ChatSession {
@@ -22,6 +24,7 @@ const App: React.FC = () => {
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -105,6 +108,91 @@ const App: React.FC = () => {
     }
   };
 
+  const exportSessionToPDF = async (session: ChatSession) => {
+    if (session.messages.length === 0) return;
+
+    try {
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF();
+      
+      // Set up the document
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPosition = margin;
+      
+      // Title
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Weather Chat Export', margin, yPosition);
+      yPosition += 15;
+      
+      // Session info
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Session: ${session.title}`, margin, yPosition);
+      yPosition += 8;
+      pdf.text(`Date: ${session.createdAt.toLocaleDateString()} ${session.createdAt.toLocaleTimeString()}`, margin, yPosition);
+      yPosition += 8;
+      pdf.text(`Messages: ${session.messages.length}`, margin, yPosition);
+      yPosition += 20;
+      
+      // Messages
+      session.messages.forEach((message, index) => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 40) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+        
+        // Message header
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        const role = message.role === 'user' ? 'You' : 'Weather Assistant';
+        const time = formatTime(message.timestamp);
+        pdf.text(`${role} - ${time}`, margin, yPosition);
+        yPosition += 8;
+        
+        // Message content
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        
+        // Split text to fit within margins
+        const lines = pdf.splitTextToSize(message.content, maxWidth);
+        
+        // Check if content fits on current page
+        const contentHeight = lines.length * 5;
+        if (yPosition + contentHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+        
+        // Add content with proper line spacing
+        lines.forEach((line: string) => {
+          pdf.text(line, margin, yPosition);
+          yPosition += 5;
+        });
+        
+        yPosition += 10; // Space between messages
+      });
+      
+      // Footer on last page
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(`Made by Harsh Rathod - Page ${i} of ${totalPages}`, margin, pageHeight - 10);
+      }
+      
+      // Save the PDF
+      const fileName = `weather-chat-${session.createdAt.toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    }
+  };
   const updateSession = (sessionId: string, messages: Message[]) => {
     setSessions(prev => prev.map(session => 
       session.id === sessionId 
@@ -387,6 +475,39 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLike = (messageId: string) => {
+    if (!currentSession) return;
+    
+    const updatedMessages = currentSession.messages.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, liked: !msg.liked, disliked: false }
+        : msg
+    );
+    updateSession(currentSession.id, updatedMessages);
+  };
+
+  const handleDislike = (messageId: string) => {
+    if (!currentSession) return;
+    
+    const updatedMessages = currentSession.messages.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, disliked: !msg.disliked, liked: false }
+        : msg
+    );
+    updateSession(currentSession.id, updatedMessages);
+  };
+
+  const handleCopy = async (content: string, messageId: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageId(messageId);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  };
+
+
   const formatTime = (timestamp: Date): string => {
     return timestamp.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -423,23 +544,50 @@ const App: React.FC = () => {
             ) : (
               <div className="p-2 sidebar-scroll overflow-y-auto max-h-full">
                 {sessions.map((session) => (
-                  <button
+                  <div
                     key={session.id}
-                    onClick={() => selectSession(session)}
-                    className={`w-full text-left p-3 mb-2 rounded-lg transition-colors session-item ${
+                    className={`w-full p-3 mb-2 rounded-lg transition-colors session-item ${
                       currentSession?.id === session.id ? 'session-active' : ''
                     }`}
                   >
-                    <h3 className="font-medium truncate session-title">
-                      {session.title}
-                    </h3>
-                    <p className="text-sm text-muted">
-                      {session.messages.length} messages
-                    </p>
-                    <p className="text-xs text-muted">
-                      {session.createdAt.toLocaleDateString()}
-                    </p>
-                  </button>
+                    <div 
+                      onClick={() => selectSession(session)}
+                      className="cursor-pointer flex-1"
+                    >
+                      <h3 className="font-medium truncate session-title">
+                        {session.title}
+                      </h3>
+                      <p className="text-sm text-muted">
+                        {session.messages.length} messages
+                      </p>
+                      <p className="text-xs text-muted">
+                        {session.createdAt.toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-1 mt-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          exportSessionToPDF(session);
+                        }}
+                        className="p-1.5 rounded-md transition-colors session-action-btn"
+                        title="Export to PDF"
+                        disabled={session.messages.length === 0}
+                      >
+                        <FileText className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteSession(session.id);
+                        }}
+                        className="p-1.5 rounded-md transition-colors session-action-btn delete-btn"
+                        title="Delete chat"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -545,6 +693,40 @@ const App: React.FC = () => {
                               </p>
                             </div>
                             
+                            {message.role === 'assistant' && (
+                              <div className="flex items-center space-x-2 mt-2">
+                                <button
+                                  onClick={() => handleLike(message.id)}
+                                  className={`p-1.5 rounded-lg transition-colors message-action-btn ${
+                                    message.liked ? 'liked' : ''
+                                  }`}
+                                  title="Like this response"
+                                >
+                                  <ThumbsUp className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDislike(message.id)}
+                                  className={`p-1.5 rounded-lg transition-colors message-action-btn ${
+                                    message.disliked ? 'disliked' : ''
+                                  }`}
+                                  title="Dislike this response"
+                                >
+                                  <ThumbsDown className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleCopy(message.content, message.id)}
+                                  className="p-1.5 rounded-lg transition-colors message-action-btn copy-btn"
+                                  title="Copy response"
+                                >
+                                  {copiedMessageId === message.id ? (
+                                    <Check className="w-4 h-4" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </button>
+                              </div>
+                            )}
+                            
                             <div className="message-time">
                               {formatTime(message.timestamp)}
                             </div>
@@ -600,7 +782,7 @@ const App: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-xs mt-3 text-center text-muted">
-                    Press Enter to send • Powered by Gemini AI
+                    Press Enter to send • Made by Harsh Rathod
                   </p>
                 </div>
               </div>
